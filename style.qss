@@ -1,0 +1,142 @@
+/* =========================
+   GLOBAL
+========================= */
+* {
+    outline: none;
+    selection-background-color: rgba(76,125,255,0.25);
+    selection-color: #FFFFFF;
+}
+
+QWidget {
+    background-color: #0E1116;
+    color: #E6E8EB;
+    font-family: "Segoe UI", "Inter", sans-serif;
+    font-size: 13px;
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+#sidebar {
+    background-color: #0B0E13;
+    border-right: 1px solid rgba(255,255,255,0.05);
+}
+
+/* moving blue line */
+#sidebar_selection {
+    background-color: #4C7DFF;
+    border-radius: 2px;
+}
+
+/* sidebar buttons */
+#sidebar_button {
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px 10px 14px;
+    text-align: left;
+    color: rgba(230,230,230,140);
+}
+
+/* hover stays subtle */
+#sidebar_button:hover {
+    background-color: rgba(255,255,255,0.04);
+    color: #FFFFFF;
+}
+
+/* ACTIVE: pill touches blue bar */
+#sidebar_button:checked {
+    background-color: rgba(255,255,255,0.06);
+    color: #FFFFFF;
+    margin-left: 3px;              /* attaches to blue bar */
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+
+/* =========================
+   PAGE HEADER
+========================= */
+.page_header {
+    background-color: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 10px 14px;            /* REDUCED */
+}
+
+.page_title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+/* =========================
+   CONTENT (FLAT)
+========================= */
+.card {
+    background-color: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 12px;                 /* REDUCED */
+}
+
+/* =========================
+   INPUTS
+========================= */
+QLineEdit, QComboBox, QDateEdit, QTimeEdit, QTextEdit {
+    background-color: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 6px 8px;              /* tighter */
+}
+
+QLineEdit:focus, QComboBox:focus, QDateEdit:focus, QTextEdit:focus {
+    border: 1px solid rgba(76,125,255,0.8);
+}
+
+/* =========================
+   BUTTONS
+========================= */
+QPushButton {
+    background-color: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 6px 12px;
+}
+
+QPushButton:hover {
+    background-color: rgba(255,255,255,0.10);
+}
+
+QPushButton#primary {
+    background-color: #4C7DFF;
+    border: 1px solid rgba(76,125,255,0.7);
+    color: #FFFFFF;
+}
+
+QPushButton#primary:hover {
+    background-color: #5A89FF;
+}
+
+/* =========================
+   STATUS BAR
+========================= */
+#status_bar {
+    background-color: rgba(255,255,255,0.02);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding: 6px 12px;
+    color: rgba(230,230,230,140);
+}
+
+/* =========================
+   CALENDAR POPUP
+========================= */
+QCalendarWidget {
+    background-color: #0F131A;
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px;
+}
+
+QCalendarWidget QAbstractItemView {
+    selection-background-color: rgba(76,125,255,0.28);
+    selection-color: #FFFFFF;
+}
