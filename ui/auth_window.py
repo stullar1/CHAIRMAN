@@ -171,18 +171,28 @@ class AuthWindow(QWidget):
         self.login_password.returnPressed.connect(self._do_login)
         layout.addWidget(self.login_password)
 
-        # Remember device
+        # Remember device - custom checkbox with checkmark
         self.remember_device = QCheckBox("Remember this device")
         self.remember_device.setStyleSheet("""
-            QCheckBox { color: #666666; font-size: 12px; }
+            QCheckBox {
+                color: #666666;
+                font-size: 12px;
+                spacing: 8px;
+            }
             QCheckBox::indicator {
-                width: 16px; height: 16px;
+                width: 18px;
+                height: 18px;
                 border: 2px solid #333333;
-                border-radius: 3px;
+                border-radius: 4px;
+                background-color: transparent;
+            }
+            QCheckBox::indicator:hover {
+                border-color: #5865F2;
             }
             QCheckBox::indicator:checked {
                 background-color: #5865F2;
                 border-color: #5865F2;
+                image: url(assets/icons/checkmark.svg);
             }
         """)
         layout.addWidget(self.remember_device)

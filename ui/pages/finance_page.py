@@ -370,8 +370,11 @@ class FinancePage(QWidget):
         card.setStyleSheet("""
             QFrame {
                 background-color: #1A1A1A;
-                border: 1px solid #222222;
+                border: 2px solid #2A2A2A;
                 border-radius: 16px;
+            }
+            QFrame:hover {
+                border-color: #333333;
             }
         """)
 

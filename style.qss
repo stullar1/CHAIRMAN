@@ -20,9 +20,11 @@ QTextEdit:focus, QTimeEdit:focus, QCheckBox:focus {
     outline: none;
 }
 
-/* Sidebar - Lighter than main content for contrast */
+/* Sidebar - Noticeably lighter than main content for clear contrast */
 QWidget#sidebar {
-    background-color: #181818;
+    background-color: #1A1A1A;
+    border-right: 1px solid #2A2A2A;
+    border-bottom-left-radius: 12px;
 }
 
 QPushButton#sidebar_button {
@@ -189,6 +191,7 @@ QCheckBox::indicator:hover {
 QCheckBox::indicator:checked {
     background-color: #5865F2;
     border-color: #5865F2;
+    image: url(assets/icons/checkmark.svg);
 }
 
 /* ComboBox dropdown */

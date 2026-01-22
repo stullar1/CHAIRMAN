@@ -9,7 +9,7 @@ from pathlib import Path
 
 from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGraphicsOpacityEffect
 from PySide6.QtCore import Qt, Signal, QPropertyAnimation, QEasingCurve, QRect, QMimeData, QTimer, QSequentialAnimationGroup, QParallelAnimationGroup
-from PySide6.QtGui import QFont, QPainter, QColor, QPixmap, QDrag
+from PySide6.QtGui import QFont, QPainter, QColor, QPixmap, QDrag, QPalette
 
 from config import UIConfig, VERSION
 
@@ -93,21 +93,26 @@ class SideBar(QWidget):
     page_selected = Signal(int)
     tab_order_changed = Signal(list)
 
-    # Lighter distinct color from main content (#121212)
-    SIDEBAR_BG = "#181818"
-    SIDEBAR_ACCENT = "#1E1E1E"
+    # Noticeably lighter than main content (#121212) for clear visual distinction
+    SIDEBAR_BG = "#1A1A1A"
+    SIDEBAR_ACCENT = "#252525"
 
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.setObjectName("sidebar")
         self.setFixedWidth(UIConfig.SIDEBAR_WIDTH)
 
-        # Lighter distinct sidebar background - use !important via setProperty
+        # Force sidebar background color - must be applied directly
         self.setAutoFillBackground(True)
+        palette = self.palette()
+        palette.setColor(self.backgroundRole(), QColor(self.SIDEBAR_BG))
+        self.setPalette(palette)
+
         self.setStyleSheet(f"""
             QWidget#sidebar {{
                 background-color: {self.SIDEBAR_BG};
-                border-right: 1px solid #252525;
+                border-right: 1px solid #2A2A2A;
+                border-bottom-left-radius: 12px;
             }}
         """)
 
@@ -138,7 +143,7 @@ class SideBar(QWidget):
         self.greeting_label.setFont(greeting_font)
         self.greeting_label.setStyleSheet("""
             color: #FFFFFF;
-            padding: 8px 8px 8px 8px;
+            padding: 8px 8px 0px 8px;
             background: transparent;
         """)
         self.greeting_label.setWordWrap(True)
@@ -155,7 +160,7 @@ class SideBar(QWidget):
         self.greeting_subtext.setAlignment(Qt.AlignLeft)
         self.greeting_subtext.setStyleSheet("""
             color: #555555;
-            padding: 0 8px 16px 8px;
+            padding: 2px 8px 16px 8px;
             background: transparent;
             font-size: 11px;
         """)

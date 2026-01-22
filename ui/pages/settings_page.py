@@ -9,7 +9,7 @@ from pathlib import Path
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
     QPushButton, QFrame, QScrollArea, QMessageBox, QDialog,
-    QDialogButtonBox, QFileDialog
+    QDialogButtonBox, QFileDialog, QComboBox
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
@@ -514,6 +514,40 @@ class SettingsPage(QWidget):
         """)
         add_row.addWidget(self.team_email_input, 1)
 
+        # Role selector
+        self.team_role_combo = QComboBox()
+        self.team_role_combo.addItems(["Member", "Admin", "Owner"])
+        self.team_role_combo.setFixedSize(100, 40)
+        self.team_role_combo.setStyleSheet("""
+            QComboBox {
+                background-color: #252525;
+                border: 1px solid #333333;
+                border-radius: 8px;
+                padding: 8px 12px;
+                color: #FFFFFF;
+                font-size: 13px;
+            }
+            QComboBox:hover { border-color: #444444; }
+            QComboBox:focus { border-color: #5865F2; }
+            QComboBox::drop-down {
+                border: none;
+                padding-right: 8px;
+            }
+            QComboBox::down-arrow {
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 5px solid #666666;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #252525;
+                border: 1px solid #333333;
+                border-radius: 8px;
+                selection-background-color: #5865F2;
+                color: #FFFFFF;
+            }
+        """)
+        add_row.addWidget(self.team_role_combo)
+
         add_btn = QPushButton("Add")
         add_btn.setFixedSize(80, 40)
         add_btn.setStyleSheet("""
@@ -841,12 +875,19 @@ class SettingsPage(QWidget):
         row_layout.setContentsMargins(12, 10, 12, 10)
         row_layout.setSpacing(12)
 
-        # Avatar placeholder
+        # Avatar placeholder with role-based color
+        avatar_colors = {
+            'owner': '#F59E0B',   # Gold for owner
+            'admin': '#5865F2',   # Blue for admin
+            'member': '#22C55E',  # Green for member
+        }
+        avatar_color = avatar_colors.get(role.lower(), '#5865F2')
+
         avatar = QLabel(email[0].upper())
         avatar.setFixedSize(36, 36)
         avatar.setAlignment(Qt.AlignCenter)
-        avatar.setStyleSheet("""
-            background-color: #5865F2;
+        avatar.setStyleSheet(f"""
+            background-color: {avatar_color};
             border-radius: 18px;
             color: #FFFFFF;
             font-weight: bold;
@@ -868,16 +909,46 @@ class SettingsPage(QWidget):
 
         row_layout.addLayout(info, 1)
 
-        # Role badge
-        role_label = QLabel(role.title())
-        role_label.setStyleSheet("""
-            background-color: #333333;
-            border-radius: 4px;
-            padding: 4px 8px;
-            color: #AAAAAA;
-            font-size: 11px;
+        # Role dropdown
+        role_colors = {
+            'owner': ('background-color: #92400E; color: #FCD34D;', 'Owner'),
+            'admin': ('background-color: #3730A3; color: #A5B4FC;', 'Admin'),
+            'member': ('background-color: #14532D; color: #86EFAC;', 'Member'),
+        }
+        role_style, role_text = role_colors.get(role.lower(), ('background-color: #333333; color: #AAAAAA;', role.title()))
+
+        role_combo = QComboBox()
+        role_combo.addItems(["Member", "Admin", "Owner"])
+        role_combo.setCurrentText(role.title())
+        role_combo.setFixedSize(90, 28)
+        role_combo.setStyleSheet(f"""
+            QComboBox {{
+                {role_style}
+                border: none;
+                border-radius: 4px;
+                padding: 4px 8px;
+                font-size: 11px;
+                font-weight: 600;
+            }}
+            QComboBox::drop-down {{
+                border: none;
+                width: 16px;
+            }}
+            QComboBox::down-arrow {{
+                border-left: 3px solid transparent;
+                border-right: 3px solid transparent;
+                border-top: 4px solid currentColor;
+            }}
+            QComboBox QAbstractItemView {{
+                background-color: #252525;
+                border: 1px solid #333333;
+                border-radius: 6px;
+                selection-background-color: #5865F2;
+                color: #FFFFFF;
+            }}
         """)
-        row_layout.addWidget(role_label)
+        role_combo.currentTextChanged.connect(lambda new_role: self._change_member_role(member_id, new_role, role_combo, avatar))
+        row_layout.addWidget(role_combo)
 
         # Remove button
         remove_btn = QPushButton("×")
@@ -903,6 +974,7 @@ class SettingsPage(QWidget):
     def _add_team_member(self):
         """Add a new team member."""
         email = self.team_email_input.text().strip()
+        role = self.team_role_combo.currentText().lower()
 
         if not email or '@' not in email:
             QMessageBox.warning(self, "Error", "Please enter a valid email address.")
@@ -917,16 +989,17 @@ class SettingsPage(QWidget):
             cursor = conn.cursor()
 
             cursor.execute("""
-                INSERT INTO team_members (business_id, email) VALUES (?, ?)
-            """, (self.current_user['id'], email))
+                INSERT INTO team_members (business_id, email, role) VALUES (?, ?, ?)
+            """, (self.current_user['id'], email, role))
             conn.commit()
 
             member_id = cursor.lastrowid
             self.team_email_input.clear()
+            self.team_role_combo.setCurrentIndex(0)  # Reset to Member
             self.empty_team_label.hide()
-            self._add_team_member_widget(member_id, email, None, 'member')
+            self._add_team_member_widget(member_id, email, None, role)
 
-            QMessageBox.information(self, "Success", f"Invited {email} to your team.")
+            QMessageBox.information(self, "Success", f"Invited {email} as {role.title()} to your team.")
 
         except Exception as e:
             if "UNIQUE constraint" in str(e):
@@ -934,6 +1007,67 @@ class SettingsPage(QWidget):
             else:
                 logger.error(f"Error adding team member: {e}")
                 QMessageBox.critical(self, "Error", f"Failed to add team member: {e}")
+
+    def _change_member_role(self, member_id: int, new_role: str, combo: QComboBox, avatar: QLabel):
+        """Change a team member's role."""
+        role = new_role.lower()
+
+        try:
+            from data.db import get_connection
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                UPDATE team_members SET role = ? WHERE id = ?
+            """, (role, member_id))
+            conn.commit()
+
+            # Update styling
+            role_colors = {
+                'owner': ('background-color: #92400E; color: #FCD34D;', '#F59E0B'),
+                'admin': ('background-color: #3730A3; color: #A5B4FC;', '#5865F2'),
+                'member': ('background-color: #14532D; color: #86EFAC;', '#22C55E'),
+            }
+            combo_style, avatar_color = role_colors.get(role, ('background-color: #333333; color: #AAAAAA;', '#5865F2'))
+
+            combo.setStyleSheet(f"""
+                QComboBox {{
+                    {combo_style}
+                    border: none;
+                    border-radius: 4px;
+                    padding: 4px 8px;
+                    font-size: 11px;
+                    font-weight: 600;
+                }}
+                QComboBox::drop-down {{
+                    border: none;
+                    width: 16px;
+                }}
+                QComboBox::down-arrow {{
+                    border-left: 3px solid transparent;
+                    border-right: 3px solid transparent;
+                    border-top: 4px solid currentColor;
+                }}
+                QComboBox QAbstractItemView {{
+                    background-color: #252525;
+                    border: 1px solid #333333;
+                    border-radius: 6px;
+                    selection-background-color: #5865F2;
+                    color: #FFFFFF;
+                }}
+            """)
+
+            avatar.setStyleSheet(f"""
+                background-color: {avatar_color};
+                border-radius: 18px;
+                color: #FFFFFF;
+                font-weight: bold;
+                font-size: 14px;
+            """)
+
+        except Exception as e:
+            logger.error(f"Error changing role: {e}")
+            QMessageBox.critical(self, "Error", f"Failed to change role: {e}")
 
     def _remove_team_member(self, member_id: int, widget: QWidget):
         """Remove a team member."""
