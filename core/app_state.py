@@ -4,6 +4,6 @@ from core.scheduler import Scheduler
 
 
 class AppState:
-    clients = ClientService()
-    services = ServiceManager()
+    client_service = ClientService()
+    service_manager = ServiceManager()
     scheduler = Scheduler()

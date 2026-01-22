@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(python -c:*)",
+      "Bash(python app.py:*)",
+      "Bash(findstr:*)",
+      "Bash(timeout /t 5)",
+      "Bash(timeout:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

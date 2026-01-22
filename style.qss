@@ -1,142 +1,259 @@
-/* =========================
-   GLOBAL
-========================= */
+/* CHAIRMAN - Clean Minimal Dark Theme with Animations */
+
 * {
+    font-family: "Segoe UI", sans-serif;
     outline: none;
-    selection-background-color: rgba(76,125,255,0.25);
-    selection-color: #FFFFFF;
+}
+
+*:focus {
+    outline: none;
 }
 
 QWidget {
-    background-color: #0E1116;
-    color: #E6E8EB;
-    font-family: "Segoe UI", "Inter", sans-serif;
+    background-color: #121212;
+    color: #FFFFFF;
     font-size: 13px;
 }
 
-/* =========================
-   SIDEBAR
-========================= */
-#sidebar {
-    background-color: #0B0E13;
-    border-right: 1px solid rgba(255,255,255,0.05);
+QPushButton:focus, QComboBox:focus, QLineEdit:focus,
+QTextEdit:focus, QTimeEdit:focus, QCheckBox:focus {
+    outline: none;
 }
 
-/* moving blue line */
-#sidebar_selection {
-    background-color: #4C7DFF;
-    border-radius: 2px;
+/* Sidebar - Lighter than main content for contrast */
+QWidget#sidebar {
+    background-color: #181818;
 }
 
-/* sidebar buttons */
-#sidebar_button {
-    background: transparent;
+QPushButton#sidebar_button {
+    background-color: transparent;
+    color: #888888;
     border: none;
-    border-radius: 10px;
-    padding: 10px 14px 10px 14px;
+    border-radius: 8px;
+    padding: 10px 14px;
     text-align: left;
-    color: rgba(230,230,230,140);
+    font-size: 13px;
+    margin: 2px 6px;
 }
 
-/* hover stays subtle */
-#sidebar_button:hover {
-    background-color: rgba(255,255,255,0.04);
+QPushButton#sidebar_button:checked {
+    background-color: #5865F2;
     color: #FFFFFF;
 }
 
-/* ACTIVE: pill touches blue bar */
-#sidebar_button:checked {
-    background-color: rgba(255,255,255,0.06);
+QPushButton#sidebar_button:hover:!checked {
+    background-color: #252525;
     color: #FFFFFF;
-    margin-left: 3px;              /* attaches to blue bar */
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
 }
 
-/* =========================
-   PAGE HEADER
-========================= */
-.page_header {
-    background-color: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 12px;
-    padding: 10px 14px;            /* REDUCED */
+QPushButton#sidebar_button:pressed {
+    background-color: #4752C4;
+    padding-top: 12px;
+    padding-bottom: 8px;
 }
 
-.page_title {
-    font-size: 17px;
+/* Main Buttons with press animation */
+QPushButton#btn_primary {
+    background-color: #5865F2;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
     font-weight: 600;
+}
+
+QPushButton#btn_primary:hover {
+    background-color: #4752C4;
+}
+
+QPushButton#btn_primary:pressed {
+    background-color: #3C45A5;
+    padding-top: 12px;
+    padding-bottom: 8px;
+}
+
+QPushButton#btn_secondary {
+    background-color: #252525;
+    color: #FFFFFF;
+    border: 1px solid #333333;
+    border-radius: 8px;
+    padding: 10px 20px;
+}
+
+QPushButton#btn_secondary:hover {
+    background-color: #333333;
+    border-color: #444444;
+}
+
+QPushButton#btn_secondary:pressed {
+    background-color: #1A1A1A;
+    padding-top: 12px;
+    padding-bottom: 8px;
+}
+
+/* Form Inputs */
+QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QTextEdit, QTimeEdit, QDateEdit {
+    background-color: #1E1E1E;
+    color: #FFFFFF;
+    border: 1px solid #2A2A2A;
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+QLineEdit:hover, QComboBox:hover, QSpinBox:hover, QTextEdit:hover {
+    border-color: #333333;
+}
+
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QTextEdit:focus {
+    border-color: #5865F2;
+}
+
+QLineEdit::placeholder {
+    color: #555555;
+}
+
+/* Labels */
+QLabel {
+    background-color: transparent;
     color: #FFFFFF;
 }
 
-/* =========================
-   CONTENT (FLAT)
-========================= */
-.card {
-    background-color: rgba(255,255,255,0.025);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 12px;
-    padding: 12px;                 /* REDUCED */
+QLabel#page_title {
+    font-size: 20px;
+    font-weight: 600;
 }
 
-/* =========================
-   INPUTS
-========================= */
-QLineEdit, QComboBox, QDateEdit, QTimeEdit, QTextEdit {
-    background-color: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
+QLabel#page_subtitle {
+    color: #666666;
+    font-size: 13px;
+}
+
+QLabel#form_label {
+    color: #666666;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Cards */
+QFrame#modern_card, QFrame#page_header {
+    background-color: #1E1E1E;
+    border: 1px solid #2A2A2A;
     border-radius: 10px;
-    padding: 6px 8px;              /* tighter */
 }
 
-QLineEdit:focus, QComboBox:focus, QDateEdit:focus, QTextEdit:focus {
-    border: 1px solid rgba(76,125,255,0.8);
+/* Scrollbars */
+QScrollBar:vertical {
+    background-color: transparent;
+    width: 6px;
+    margin: 4px 0;
 }
 
-/* =========================
-   BUTTONS
-========================= */
-QPushButton {
-    background-color: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 10px;
-    padding: 6px 12px;
+QScrollBar::handle:vertical {
+    background-color: #333333;
+    border-radius: 3px;
+    min-height: 30px;
 }
 
-QPushButton:hover {
-    background-color: rgba(255,255,255,0.10);
+QScrollBar::handle:vertical:hover {
+    background-color: #444444;
 }
 
-QPushButton#primary {
-    background-color: #4C7DFF;
-    border: 1px solid rgba(76,125,255,0.7);
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: transparent;
+}
+
+/* Checkboxes */
+QCheckBox {
+    background-color: transparent;
+    color: #FFFFFF;
+    spacing: 8px;
+}
+
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #333333;
+    border-radius: 4px;
+    background-color: transparent;
+}
+
+QCheckBox::indicator:hover {
+    border-color: #5865F2;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #5865F2;
+    border-color: #5865F2;
+}
+
+/* ComboBox dropdown */
+QComboBox::drop-down {
+    border: none;
+    width: 24px;
+}
+
+QComboBox::down-arrow {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #666666;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #1E1E1E;
+    border: 1px solid #333333;
+    border-radius: 8px;
+    selection-background-color: #5865F2;
+    padding: 4px;
+}
+
+/* Status bar area */
+QWidget#StatusBar {
+    background-color: #1A1A1A;
+}
+
+/* Scroll areas */
+QScrollArea {
+    background-color: transparent;
+    border: none;
+}
+
+QScrollArea > QWidget > QWidget {
+    background-color: transparent;
+}
+
+/* Message boxes */
+QMessageBox {
+    background-color: #1A1A1A;
+}
+
+QMessageBox QLabel {
     color: #FFFFFF;
 }
 
-QPushButton#primary:hover {
-    background-color: #5A89FF;
+QMessageBox QPushButton {
+    background-color: #5865F2;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    min-width: 80px;
+    font-weight: 600;
 }
 
-/* =========================
-   STATUS BAR
-========================= */
-#status_bar {
-    background-color: rgba(255,255,255,0.02);
-    border-top: 1px solid rgba(255,255,255,0.05);
-    padding: 6px 12px;
-    color: rgba(230,230,230,140);
+QMessageBox QPushButton:hover {
+    background-color: #4752C4;
 }
 
-/* =========================
-   CALENDAR POPUP
-========================= */
-QCalendarWidget {
-    background-color: #0F131A;
-    border: 1px solid rgba(255,255,255,0.10);
-    border-radius: 10px;
+QMessageBox QPushButton:pressed {
+    background-color: #3C45A5;
 }
 
-QCalendarWidget QAbstractItemView {
-    selection-background-color: rgba(76,125,255,0.28);
-    selection-color: #FFFFFF;
+/* Input dialog */
+QInputDialog {
+    background-color: #1A1A1A;
 }
