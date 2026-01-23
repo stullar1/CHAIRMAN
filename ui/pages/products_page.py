@@ -7,8 +7,10 @@ from __future__ import annotations
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
     QPushButton, QFrame, QScrollArea, QDoubleSpinBox, QComboBox,
-    QMessageBox, QDialog, QGridLayout
+    QDialog, QGridLayout
 )
+
+from ui.dialogs import StyledMessageBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPainter
 
@@ -643,7 +645,7 @@ class ProductsPage(QWidget):
         if dialog.exec() == QDialog.Accepted:
             data = dialog.get_data()
             if not data['name']:
-                QMessageBox.warning(self, "Error", "Please enter a product name")
+                StyledMessageBox.warning(self, "Error", "Please enter a product name")
                 return
             try:
                 conn = get_connection()
@@ -656,14 +658,14 @@ class ProductsPage(QWidget):
                 self._load_products(self.search_input.text())
             except Exception as e:
                 logger.error(f"Error adding product: {e}")
-                QMessageBox.critical(self, "Error", str(e))
+                StyledMessageBox.error(self, "Error", str(e))
 
     def _edit_product(self, product):
         dialog = ProductDialog(self, product)
         if dialog.exec() == QDialog.Accepted:
             data = dialog.get_data()
             if not data['name']:
-                QMessageBox.warning(self, "Error", "Please enter a product name")
+                StyledMessageBox.warning(self, "Error", "Please enter a product name")
                 return
             try:
                 conn = get_connection()
@@ -676,16 +678,14 @@ class ProductsPage(QWidget):
                 self._load_products(self.search_input.text())
             except Exception as e:
                 logger.error(f"Error updating product: {e}")
-                QMessageBox.critical(self, "Error", str(e))
+                StyledMessageBox.error(self, "Error", str(e))
 
     def _delete_product(self, product):
-        reply = QMessageBox.question(
+        confirmed = StyledMessageBox.question(
             self, "Delete Product",
-            f"Are you sure you want to delete '{product['name']}'?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            f"Are you sure you want to delete '{product['name']}'?"
         )
-        if reply == QMessageBox.Yes:
+        if confirmed:
             try:
                 conn = get_connection()
                 cursor = conn.cursor()
@@ -694,7 +694,7 @@ class ProductsPage(QWidget):
                 self._load_products(self.search_input.text())
             except Exception as e:
                 logger.error(f"Error deleting product: {e}")
-                QMessageBox.critical(self, "Error", str(e))
+                StyledMessageBox.error(self, "Error", str(e))
 
     def _use_product(self, product):
         """Record product usage."""
@@ -715,11 +715,11 @@ class ProductsPage(QWidget):
                 cursor.execute("UPDATE products SET quantity=? WHERE id=?", (new_qty, product['id']))
                 conn.commit()
 
-                QMessageBox.information(
+                StyledMessageBox.success(
                     self, "Usage Recorded",
                     f"Used: {amount:.2f} g/ml\nCost: ${cost_used:.2f}\nRemaining: {new_qty:.2f} g/ml"
                 )
                 self._load_products(self.search_input.text())
             except Exception as e:
                 logger.error(f"Error recording usage: {e}")
-                QMessageBox.critical(self, "Error", str(e))
+                StyledMessageBox.error(self, "Error", str(e))

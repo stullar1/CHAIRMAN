@@ -8,9 +8,11 @@ from pathlib import Path
 
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-    QPushButton, QFrame, QScrollArea, QMessageBox, QDialog,
+    QPushButton, QFrame, QScrollArea, QDialog,
     QDialogButtonBox, QFileDialog, QComboBox
 )
+
+from ui.dialogs import StyledMessageBox
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 
@@ -409,24 +411,23 @@ class SettingsPage(QWidget):
                     self._update_logo_preview(saved_path)
                     self.logo_changed.emit(saved_path)
 
-                    QMessageBox.information(self, "Success", "Logo updated successfully!")
+                    StyledMessageBox.success(self, "Success", "Logo updated successfully!")
 
                 except Exception as e:
                     logger.error(f"Error saving logo: {e}")
-                    QMessageBox.critical(self, "Error", f"Failed to save logo: {e}")
+                    StyledMessageBox.error(self, "Error", f"Failed to save logo: {e}")
 
     def _remove_logo(self):
         """Remove the current business logo."""
         if not self.current_user:
             return
 
-        reply = QMessageBox.question(
+        confirmed = StyledMessageBox.question(
             self, "Remove Logo",
-            "Are you sure you want to remove your business logo?",
-            QMessageBox.Yes | QMessageBox.No
+            "Are you sure you want to remove your business logo?"
         )
 
-        if reply == QMessageBox.Yes:
+        if confirmed:
             try:
                 from data.db import get_connection
                 conn = get_connection()
@@ -441,11 +442,11 @@ class SettingsPage(QWidget):
                 self._update_logo_preview(None)
                 self.logo_changed.emit("")
 
-                QMessageBox.information(self, "Success", "Logo removed.")
+                StyledMessageBox.success(self, "Success", "Logo removed.")
 
             except Exception as e:
                 logger.error(f"Error removing logo: {e}")
-                QMessageBox.critical(self, "Error", f"Failed to remove logo: {e}")
+                StyledMessageBox.error(self, "Error", f"Failed to remove logo: {e}")
 
     def _update_logo_preview(self, logo_path: str):
         """Update the logo preview widget."""
@@ -786,7 +787,7 @@ class SettingsPage(QWidget):
         phone = self.phone_input.text().strip()
 
         if not name or not business_name:
-            QMessageBox.warning(self, "Error", "Name and business name are required.")
+            StyledMessageBox.warning(self, "Error", "Name and business name are required.")
             return
 
         try:
@@ -806,11 +807,11 @@ class SettingsPage(QWidget):
             self.current_user['phone'] = phone
 
             self._cancel_edit()
-            QMessageBox.information(self, "Success", "Profile updated successfully.")
+            StyledMessageBox.success(self, "Success", "Profile updated successfully.")
 
         except Exception as e:
             logger.error(f"Error saving profile: {e}")
-            QMessageBox.critical(self, "Error", f"Failed to save changes: {e}")
+            StyledMessageBox.error(self, "Error", f"Failed to save changes: {e}")
 
     def _load_team_members(self):
         """Load team members from database."""
@@ -977,7 +978,7 @@ class SettingsPage(QWidget):
         role = self.team_role_combo.currentText().lower()
 
         if not email or '@' not in email:
-            QMessageBox.warning(self, "Error", "Please enter a valid email address.")
+            StyledMessageBox.warning(self, "Error", "Please enter a valid email address.")
             return
 
         if not self.current_user:
@@ -999,14 +1000,14 @@ class SettingsPage(QWidget):
             self.empty_team_label.hide()
             self._add_team_member_widget(member_id, email, None, role)
 
-            QMessageBox.information(self, "Success", f"Invited {email} as {role.title()} to your team.")
+            StyledMessageBox.success(self, "Success", f"Invited {email} as {role.title()} to your team.")
 
         except Exception as e:
             if "UNIQUE constraint" in str(e):
-                QMessageBox.warning(self, "Error", "This email is already in your team.")
+                StyledMessageBox.warning(self, "Error", "This email is already in your team.")
             else:
                 logger.error(f"Error adding team member: {e}")
-                QMessageBox.critical(self, "Error", f"Failed to add team member: {e}")
+                StyledMessageBox.error(self, "Error", f"Failed to add team member: {e}")
 
     def _change_member_role(self, member_id: int, new_role: str, combo: QComboBox, avatar: QLabel):
         """Change a team member's role."""
@@ -1067,17 +1068,16 @@ class SettingsPage(QWidget):
 
         except Exception as e:
             logger.error(f"Error changing role: {e}")
-            QMessageBox.critical(self, "Error", f"Failed to change role: {e}")
+            StyledMessageBox.error(self, "Error", f"Failed to change role: {e}")
 
     def _remove_team_member(self, member_id: int, widget: QWidget):
         """Remove a team member."""
-        reply = QMessageBox.question(
+        confirmed = StyledMessageBox.question(
             self, "Remove Team Member",
-            "Are you sure you want to remove this team member?",
-            QMessageBox.Yes | QMessageBox.No
+            "Are you sure you want to remove this team member?"
         )
 
-        if reply == QMessageBox.Yes:
+        if confirmed:
             try:
                 from data.db import get_connection
                 conn = get_connection()
@@ -1093,7 +1093,7 @@ class SettingsPage(QWidget):
 
             except Exception as e:
                 logger.error(f"Error removing team member: {e}")
-                QMessageBox.critical(self, "Error", f"Failed to remove team member: {e}")
+                StyledMessageBox.error(self, "Error", f"Failed to remove team member: {e}")
 
     def _change_password(self):
         """Show change password dialog."""
@@ -1102,13 +1102,12 @@ class SettingsPage(QWidget):
 
     def _logout(self):
         """Log out the current user."""
-        reply = QMessageBox.question(
+        confirmed = StyledMessageBox.question(
             self, "Log Out",
-            "Are you sure you want to log out?",
-            QMessageBox.Yes | QMessageBox.No
+            "Are you sure you want to log out?"
         )
 
-        if reply == QMessageBox.Yes:
+        if confirmed:
             if self.current_user:
                 self.auth_service.logout(self.current_user.get('id'))
             self.logout_requested.emit()
@@ -1116,13 +1115,12 @@ class SettingsPage(QWidget):
     def _delete_account(self):
         """Delete the user's account."""
         # First confirmation
-        reply = QMessageBox.warning(
+        confirmed = StyledMessageBox.question(
             self, "Delete Account",
-            "Are you sure you want to delete your account?\n\nThis will permanently delete all your data including:\n• Your profile\n• All clients\n• All appointments\n• All services\n\nThis action CANNOT be undone.",
-            QMessageBox.Yes | QMessageBox.No
+            "Are you sure you want to delete your account?\n\nThis will permanently delete all your data including:\n• Your profile\n• All clients\n• All appointments\n• All services\n\nThis action CANNOT be undone."
         )
 
-        if reply != QMessageBox.Yes:
+        if not confirmed:
             return
 
         # Second confirmation with email verification
@@ -1186,7 +1184,7 @@ class SettingsPage(QWidget):
             if email_input.text().strip() == self.current_user.get('email', ''):
                 self._perform_account_deletion()
             else:
-                QMessageBox.warning(self, "Error", "Email doesn't match. Account not deleted.")
+                StyledMessageBox.warning(self, "Error", "Email doesn't match. Account not deleted.")
 
     def _perform_account_deletion(self):
         """Actually delete the account from database."""
@@ -1208,12 +1206,12 @@ class SettingsPage(QWidget):
             # Clear device token
             self.auth_service.logout(user_id)
 
-            QMessageBox.information(self, "Account Deleted", "Your account has been deleted.")
+            StyledMessageBox.success(self, "Account Deleted", "Your account has been deleted.")
             self.account_deleted.emit()
 
         except Exception as e:
             logger.error(f"Error deleting account: {e}")
-            QMessageBox.critical(self, "Error", f"Failed to delete account: {e}")
+            StyledMessageBox.error(self, "Error", f"Failed to delete account: {e}")
 
 
 class ChangePasswordDialog(QDialog):
@@ -1360,7 +1358,7 @@ class ChangePasswordDialog(QDialog):
             """, (password_hash, salt, self.user_data['id']))
             conn.commit()
 
-            QMessageBox.information(self, "Success", "Password updated successfully.")
+            StyledMessageBox.success(self, "Success", "Password updated successfully.")
             self.accept()
 
         except Exception as e:

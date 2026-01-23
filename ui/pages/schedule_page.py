@@ -9,8 +9,10 @@ from datetime import datetime, date, time as dtime, timedelta
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea,
     QComboBox, QTimeEdit, QTextEdit, QCheckBox,
-    QFrame, QPushButton, QMessageBox, QGraphicsOpacityEffect
+    QFrame, QPushButton, QGraphicsOpacityEffect
 )
+
+from ui.dialogs import StyledMessageBox
 from PySide6.QtCore import Qt, QTime, QPropertyAnimation, QEasingCurve, QTimer, Property, QRect
 from PySide6.QtGui import QFont
 
@@ -174,13 +176,11 @@ class TimeSlot(QFrame):
             logger.error(f"Error toggling paid: {e}")
 
     def _delete_appointment(self, appt_id: int):
-        reply = QMessageBox.question(
+        confirmed = StyledMessageBox.question(
             self, "Delete Appointment",
-            "Are you sure you want to delete this appointment?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            "Are you sure you want to delete this appointment?"
         )
-        if reply == QMessageBox.Yes:
+        if confirmed:
             try:
                 AppState.scheduler.delete(appt_id)
                 parent = self.parent()
@@ -945,7 +945,7 @@ class SchedulePage(QWidget):
         service_id = panel.service_combo.currentData()
 
         if not client_id or not service_id:
-            QMessageBox.warning(self, "Missing Information", "Please select a client and service.")
+            StyledMessageBox.warning(self, "Missing Information", "Please select a client and service.")
             return
 
         try:
@@ -964,14 +964,14 @@ class SchedulePage(QWidget):
                 notes=panel.notes_edit.toPlainText().strip()
             )
 
-            QMessageBox.information(self, "Success", "Appointment booked successfully!")
+            StyledMessageBox.success(self, "Success", "Appointment booked successfully!")
             self._load_appointments()
             panel.clear_form()
             self.toggle_quickbook()  # Close panel after booking
 
         except Exception as e:
             logger.error(f"Error booking: {e}")
-            QMessageBox.critical(self, "Error", f"Failed to book appointment: {str(e)}")
+            StyledMessageBox.error(self, "Error", f"Failed to book appointment: {str(e)}")
 
     def refresh(self):
         """Refresh data when navigating to this page."""

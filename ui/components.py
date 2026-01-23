@@ -7,8 +7,10 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import (
     QWidget, QLabel, QLineEdit, QComboBox, QTextEdit, QPushButton,
-    QVBoxLayout, QHBoxLayout, QMessageBox, QFrame, QTimeEdit, QDateEdit
+    QVBoxLayout, QHBoxLayout, QFrame, QTimeEdit, QDateEdit
 )
+
+from ui.dialogs import StyledMessageBox
 from PySide6.QtCore import Qt, Signal, QTime, QDate
 from PySide6.QtGui import QFont
 
@@ -113,12 +115,7 @@ class ErrorDialog:
     @staticmethod
     def show(title: str, message: str, parent: QWidget | None = None) -> None:
         """Show an error dialog."""
-        msg_box = QMessageBox(parent)
-        msg_box.setIcon(QMessageBox.Critical)
-        msg_box.setWindowTitle(title)
-        msg_box.setText(message)
-        msg_box.setStandardButtons(QMessageBox.Ok)
-        msg_box.exec()
+        StyledMessageBox.error(parent, title, message)
 
 
 class SuccessDialog:
@@ -127,12 +124,7 @@ class SuccessDialog:
     @staticmethod
     def show(title: str, message: str, parent: QWidget | None = None) -> None:
         """Show a success dialog."""
-        msg_box = QMessageBox(parent)
-        msg_box.setIcon(QMessageBox.Information)
-        msg_box.setWindowTitle(title)
-        msg_box.setText(message)
-        msg_box.setStandardButtons(QMessageBox.Ok)
-        msg_box.exec()
+        StyledMessageBox.success(parent, title, message)
 
 
 class ConfirmDialog:
@@ -146,13 +138,7 @@ class ConfirmDialog:
         Returns:
             True if user clicked Yes, False otherwise
         """
-        msg_box = QMessageBox(parent)
-        msg_box.setIcon(QMessageBox.Question)
-        msg_box.setWindowTitle(title)
-        msg_box.setText(message)
-        msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        msg_box.setDefaultButton(QMessageBox.No)
-        return msg_box.exec() == QMessageBox.Yes
+        return StyledMessageBox.question(parent, title, message)
 
 
 class SearchBar(QWidget):

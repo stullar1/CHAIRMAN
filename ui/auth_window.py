@@ -171,28 +171,37 @@ class AuthWindow(QWidget):
         self.login_password.returnPressed.connect(self._do_login)
         layout.addWidget(self.login_password)
 
-        # Remember device - custom checkbox with checkmark
+        # Remember device - custom animated checkbox
         self.remember_device = QCheckBox("Remember this device")
+        self.remember_device.setCursor(Qt.PointingHandCursor)
         self.remember_device.setStyleSheet("""
             QCheckBox {
-                color: #666666;
+                color: #888888;
                 font-size: 12px;
-                spacing: 8px;
+                spacing: 10px;
+            }
+            QCheckBox:hover {
+                color: #AAAAAA;
             }
             QCheckBox::indicator {
-                width: 18px;
-                height: 18px;
-                border: 2px solid #333333;
-                border-radius: 4px;
-                background-color: transparent;
+                width: 20px;
+                height: 20px;
+                border: 2px solid #404040;
+                border-radius: 6px;
+                background-color: #1A1A1A;
             }
             QCheckBox::indicator:hover {
                 border-color: #5865F2;
+                background-color: #252525;
             }
             QCheckBox::indicator:checked {
                 background-color: #5865F2;
                 border-color: #5865F2;
                 image: url(assets/icons/checkmark.svg);
+            }
+            QCheckBox::indicator:checked:hover {
+                background-color: #4752C4;
+                border-color: #4752C4;
             }
         """)
         layout.addWidget(self.remember_device)
@@ -255,7 +264,7 @@ class AuthWindow(QWidget):
     def _create_setup_page(self) -> QWidget:
         page = QWidget()
         layout = QVBoxLayout(page)
-        layout.setSpacing(8)
+        layout.setSpacing(10)
         layout.setContentsMargins(0, 0, 0, 0)
 
         title = QLabel("Set Up Your Business")
@@ -263,7 +272,7 @@ class AuthWindow(QWidget):
         title.setStyleSheet("font-size: 18px; font-weight: bold; color: #FFFFFF;")
         layout.addWidget(title)
 
-        layout.addSpacing(12)
+        layout.addSpacing(16)
 
         # Logo upload - cleaner inline design
         logo_container = QWidget()
@@ -325,38 +334,46 @@ class AuthWindow(QWidget):
 
         layout.addWidget(logo_container)
 
-        layout.addSpacing(4)
+        layout.addSpacing(12)
 
         # Business Name
         self.setup_business_name = QLineEdit()
         self.setup_business_name.setPlaceholderText("Business Name")
-        self.setup_business_name.setMinimumHeight(40)
+        self.setup_business_name.setMinimumHeight(42)
         layout.addWidget(self.setup_business_name)
+
+        layout.addSpacing(4)
 
         # Personal Email (required)
         self.setup_email = QLineEdit()
         self.setup_email.setPlaceholderText("Your Email")
-        self.setup_email.setMinimumHeight(40)
+        self.setup_email.setMinimumHeight(42)
         layout.addWidget(self.setup_email)
+
+        layout.addSpacing(4)
 
         # Business Email (optional)
         self.setup_business_email = QLineEdit()
         self.setup_business_email.setPlaceholderText("Business Email (optional)")
-        self.setup_business_email.setMinimumHeight(40)
+        self.setup_business_email.setMinimumHeight(42)
         layout.addWidget(self.setup_business_email)
+
+        layout.addSpacing(4)
 
         # Password
         self.setup_password = QLineEdit()
         self.setup_password.setPlaceholderText("Password (min 8 characters)")
         self.setup_password.setEchoMode(QLineEdit.Password)
-        self.setup_password.setMinimumHeight(40)
+        self.setup_password.setMinimumHeight(42)
         layout.addWidget(self.setup_password)
+
+        layout.addSpacing(4)
 
         # Confirm Password
         self.setup_confirm = QLineEdit()
         self.setup_confirm.setPlaceholderText("Confirm Password")
         self.setup_confirm.setEchoMode(QLineEdit.Password)
-        self.setup_confirm.setMinimumHeight(40)
+        self.setup_confirm.setMinimumHeight(42)
         self.setup_confirm.returnPressed.connect(self._do_setup)
         layout.addWidget(self.setup_confirm)
 
@@ -367,6 +384,8 @@ class AuthWindow(QWidget):
         self.setup_msg.setStyleSheet("font-size: 12px;")
         self.setup_msg.hide()
         layout.addWidget(self.setup_msg)
+
+        layout.addSpacing(20)
 
         # Continue Button
         continue_btn = QPushButton("Continue")
@@ -536,7 +555,7 @@ class AuthWindow(QWidget):
 
     def _go_to_page(self, index: int):
         """Switch to a page with size adjustment."""
-        heights = {0: 480, 1: 540, 2: 440}
+        heights = {0: 480, 1: 580, 2: 440}
         self.setFixedSize(400, heights.get(index, 480))
         self.pages.setCurrentIndex(index)
         self._update_mask()

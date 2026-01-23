@@ -6,9 +6,11 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLabel, QLineEdit,
-    QScrollArea, QTextEdit, QPushButton, QDialog, QMessageBox, QGridLayout,
+    QScrollArea, QTextEdit, QPushButton, QDialog, QGridLayout,
     QGraphicsBlurEffect
 )
+
+from ui.dialogs import StyledMessageBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QColor, QPainter
 
@@ -531,40 +533,38 @@ class ClientPage(QWidget):
         if dialog.exec() == QDialog.Accepted:
             data = dialog.get_data()
             if not data["name"]:
-                QMessageBox.warning(self, "Error", "Please enter a client name")
+                StyledMessageBox.warning(self, "Error", "Please enter a client name")
                 return
             try:
                 AppState.client_service.create(data["name"], data["phone"], data["notes"])
                 self._load_clients(self.search_input.text())
             except Exception as e:
                 logger.error(f"Error adding client: {e}")
-                QMessageBox.critical(self, "Error", "Failed to add client")
+                StyledMessageBox.error(self, "Error", "Failed to add client")
 
     def _edit_client(self, client):
         dialog = ClientDialog(self, client)
         if dialog.exec() == QDialog.Accepted:
             data = dialog.get_data()
             if not data["name"]:
-                QMessageBox.warning(self, "Error", "Please enter a client name")
+                StyledMessageBox.warning(self, "Error", "Please enter a client name")
                 return
             try:
                 AppState.client_service.update(client.id, data["name"], data["phone"], data["notes"])
                 self._load_clients(self.search_input.text())
             except Exception as e:
                 logger.error(f"Error updating client: {e}")
-                QMessageBox.critical(self, "Error", "Failed to update client")
+                StyledMessageBox.error(self, "Error", "Failed to update client")
 
     def _delete_client(self, client):
-        reply = QMessageBox.question(
+        confirmed = StyledMessageBox.question(
             self, "Delete Client",
-            f"Delete '{client.name}'?\n\nThis cannot be undone.",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            f"Delete '{client.name}'?\n\nThis cannot be undone."
         )
-        if reply == QMessageBox.Yes:
+        if confirmed:
             try:
                 AppState.client_service.delete(client.id)
                 self._load_clients(self.search_input.text())
             except Exception as e:
                 logger.error(f"Error deleting client: {e}")
-                QMessageBox.critical(self, "Error", "Failed to delete client")
+                StyledMessageBox.error(self, "Error", "Failed to delete client")

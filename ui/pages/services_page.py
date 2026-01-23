@@ -6,9 +6,11 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLabel, QLineEdit,
-    QScrollArea, QPushButton, QDialog, QMessageBox, QGridLayout,
+    QScrollArea, QPushButton, QDialog, QGridLayout,
     QSpinBox, QDoubleSpinBox
 )
+
+from ui.dialogs import StyledMessageBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPainter
 
@@ -575,21 +577,21 @@ class ServicesPage(QWidget):
         if dialog.exec() == QDialog.Accepted:
             data = dialog.get_data()
             if not data["name"]:
-                QMessageBox.warning(self, "Error", "Please enter a service name")
+                StyledMessageBox.warning(self, "Error", "Please enter a service name")
                 return
             try:
                 AppState.service_manager.create(data["name"], data["price"], data["duration"], data["buffer"])
                 self._load_services(self.search_input.text())
             except Exception as e:
                 logger.error(f"Error adding service: {e}")
-                QMessageBox.critical(self, "Error", str(e))
+                StyledMessageBox.error(self, "Error", str(e))
 
     def _edit_service(self, service):
         dialog = ServiceDialog(self, service)
         if dialog.exec() == QDialog.Accepted:
             data = dialog.get_data()
             if not data["name"]:
-                QMessageBox.warning(self, "Error", "Please enter a service name")
+                StyledMessageBox.warning(self, "Error", "Please enter a service name")
                 return
             try:
                 AppState.service_manager.update(
@@ -602,19 +604,17 @@ class ServicesPage(QWidget):
                 self._load_services(self.search_input.text())
             except Exception as e:
                 logger.error(f"Error updating service: {e}")
-                QMessageBox.critical(self, "Error", str(e))
+                StyledMessageBox.error(self, "Error", str(e))
 
     def _delete_service(self, service):
-        reply = QMessageBox.question(
+        confirmed = StyledMessageBox.question(
             self, "Delete Service",
-            f"Delete '{service.name}'?\n\nThis cannot be undone.",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            f"Delete '{service.name}'?\n\nThis cannot be undone."
         )
-        if reply == QMessageBox.Yes:
+        if confirmed:
             try:
                 AppState.service_manager.delete(service.id)
                 self._load_services(self.search_input.text())
             except Exception as e:
                 logger.error(f"Error deleting service: {e}")
-                QMessageBox.critical(self, "Error", str(e))
+                StyledMessageBox.error(self, "Error", str(e))
