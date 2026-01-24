@@ -9,12 +9,15 @@ import sys
 from pathlib import Path
 
 from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QTimer
 
 from config import APP_NAME, VERSION, Assets
 from core.logging_config import setup_logging, get_logger
+from core.updater import AutoUpdater
 from data.db import init_db, get_tab_order, save_tab_order
 from ui.auth_window import AuthWindow
 from ui.main_window import MainWindow
+from ui.dialogs import UpdateDialog
 
 # Initialize logging first
 logger = setup_logging()
@@ -145,6 +148,42 @@ def run_app() -> None:
         # Show authentication window
         auth_window.show()
         logger.info("Application started successfully")
+
+        # Check for updates in the background (after a short delay)
+        updater = AutoUpdater()
+        update_dialog = None
+
+        def on_update_available(version: str, release_notes: str):
+            nonlocal update_dialog
+            logger.info(f"Update available: v{version}")
+            # Show update dialog
+            update_dialog = UpdateDialog(
+                parent=auth_window if auth_window.isVisible() else main_window,
+                new_version=version,
+                release_notes=release_notes
+            )
+            if update_dialog.exec():
+                # User clicked "Update Now"
+                update_dialog.show_progress()
+                updater.download_update()
+
+        def on_download_progress(progress: int):
+            if update_dialog:
+                update_dialog.set_progress(progress)
+
+        def on_update_ready(filepath: str):
+            if update_dialog:
+                update_dialog.download_complete()
+            logger.info(f"Update downloaded to: {filepath}")
+            # Install the update (this will close the app)
+            QTimer.singleShot(1000, lambda: AutoUpdater.install_update(filepath))
+
+        updater.update_available.connect(on_update_available)
+        updater.download_progress.connect(on_download_progress)
+        updater.update_ready.connect(on_update_ready)
+
+        # Check for updates after 2 seconds (let the UI load first)
+        QTimer.singleShot(2000, lambda: updater.check_for_updates(silent=True))
 
         # Start event loop
         exit_code = app.exec()

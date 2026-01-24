@@ -40,7 +40,8 @@ class SoundManager(QObject):
 
     def _load_sounds(self):
         """Load all sound effects."""
-        sounds_dir = Path(__file__).parent.parent / "assets" / "sounds"
+        from config import Assets
+        sounds_dir = Assets.SOUNDS_DIR
 
         # Define sound mappings
         sound_files = {

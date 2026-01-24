@@ -33,8 +33,20 @@ DEFAULT_BUSINESS_MODE: Final[str] = BusinessMode.SOLO
 # DATABASE CONFIGURATION
 # ============================================================================
 
-# Get the project root directory (where this config.py file is located)
-PROJECT_ROOT: Final[Path] = Path(__file__).resolve().parent
+# Get the project root directory
+# When running as a PyInstaller bundle, use the executable's directory
+# When running from source, use the directory containing config.py
+import sys
+if getattr(sys, 'frozen', False):
+    # Running as compiled executable
+    # Database and user data should be next to the .exe
+    PROJECT_ROOT: Path = Path(sys.executable).resolve().parent
+    # Assets are bundled inside _internal folder by PyInstaller
+    BUNDLE_DIR: Path = PROJECT_ROOT / "_internal"
+else:
+    # Running from source
+    PROJECT_ROOT: Path = Path(__file__).resolve().parent
+    BUNDLE_DIR: Path = PROJECT_ROOT
 
 # Database file location
 DB_FILE: Final[Path] = PROJECT_ROOT / "barber.db"
@@ -196,12 +208,14 @@ class EnterpriseConfig:
 class Assets:
     """Paths to application assets."""
 
-    ASSETS_DIR: Final[Path] = PROJECT_ROOT / "assets"
+    # Assets are in BUNDLE_DIR (which is _internal when frozen, or PROJECT_ROOT when running from source)
+    ASSETS_DIR: Final[Path] = BUNDLE_DIR / "assets"
     ICONS_DIR: Final[Path] = ASSETS_DIR / "icons"
     IMAGES_DIR: Final[Path] = ASSETS_DIR / "images"
     SOUNDS_DIR: Final[Path] = ASSETS_DIR / "sounds"
-    LOGOS_DIR: Final[Path] = ASSETS_DIR / "logos"
-    STYLESHEET: Final[Path] = PROJECT_ROOT / "style.qss"
+    # User-uploaded logos go in PROJECT_ROOT (next to exe/db) so they persist
+    LOGOS_DIR: Final[Path] = PROJECT_ROOT / "logos"
+    STYLESHEET: Final[Path] = BUNDLE_DIR / "style.qss"
 
 # ============================================================================
 # EMAIL CONFIGURATION
