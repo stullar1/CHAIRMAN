@@ -5,13 +5,15 @@ Frameless with rounded corners
 from __future__ import annotations
 
 from PySide6.QtWidgets import (
-    QWidget, QHBoxLayout, QVBoxLayout, QStackedWidget, QLabel, QPushButton
+    QWidget, QHBoxLayout, QVBoxLayout, QStackedWidget, QLabel, QPushButton,
+    QGraphicsOpacityEffect
 )
-from PySide6.QtCore import Qt, QPoint
+from PySide6.QtCore import Qt, QPoint, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup
 from PySide6.QtGui import QPainter, QColor, QBrush
 
 from config import APP_NAME, VERSION, UIConfig
 from ui.sidebar import SideBar
+from ui.pages.dashboard_page import DashboardPage
 from ui.pages.schedule_page import SchedulePage
 from ui.pages.client_page import ClientPage
 from ui.pages.services_page import ServicesPage
@@ -35,6 +37,8 @@ class MainWindow(QWidget):
 
         self.current_user = None
         self._drag_pos = None
+        self._current_page_index = 0
+        self._animating = False
         self._setup_ui()
 
     def _setup_ui(self):
@@ -80,6 +84,7 @@ class MainWindow(QWidget):
         # Pages
         self.pages = QStackedWidget()
 
+        self.dashboard_page = DashboardPage()
         self.schedule_page = SchedulePage()
         self.client_page = ClientPage()
         self.services_page = ServicesPage()
@@ -87,12 +92,17 @@ class MainWindow(QWidget):
         self.finance_page = FinancePage()
         self.settings_page = SettingsPage()
 
-        self.pages.addWidget(self.schedule_page)    # 0
-        self.pages.addWidget(self.client_page)      # 1
-        self.pages.addWidget(self.services_page)    # 2
-        self.pages.addWidget(self.products_page)    # 3
-        self.pages.addWidget(self.finance_page)     # 4
-        self.pages.addWidget(self.settings_page)    # 5
+        self.pages.addWidget(self.dashboard_page)   # 0 - Home
+        self.pages.addWidget(self.schedule_page)    # 1
+        self.pages.addWidget(self.client_page)      # 2
+        self.pages.addWidget(self.services_page)    # 3
+        self.pages.addWidget(self.products_page)    # 4
+        self.pages.addWidget(self.finance_page)     # 5
+        self.pages.addWidget(self.settings_page)    # 6
+
+        # Connect dashboard quick actions
+        self.dashboard_page.view_schedule_clicked.connect(lambda: self._switch_page(1))
+        self.dashboard_page.view_finances_clicked.connect(lambda: self._switch_page(5))
 
         pages_layout.addWidget(self.pages)
 
@@ -184,7 +194,55 @@ class MainWindow(QWidget):
             self.showMaximized()
 
     def _switch_page(self, index: int):
-        self.pages.setCurrentIndex(index)
+        """Switch to a new page with fade animation."""
+        if self._animating or index == self._current_page_index:
+            return
+
+        self._animating = True
+        current_widget = self.pages.currentWidget()
+        new_widget = self.pages.widget(index)
+
+        # Setup opacity effects
+        current_effect = QGraphicsOpacityEffect(current_widget)
+        current_widget.setGraphicsEffect(current_effect)
+
+        new_effect = QGraphicsOpacityEffect(new_widget)
+        new_effect.setOpacity(0)
+        new_widget.setGraphicsEffect(new_effect)
+
+        # Fade out current page
+        fade_out = QPropertyAnimation(current_effect, b"opacity")
+        fade_out.setDuration(150)
+        fade_out.setStartValue(1.0)
+        fade_out.setEndValue(0.0)
+        fade_out.setEasingCurve(QEasingCurve.OutQuad)
+
+        # Fade in new page
+        fade_in = QPropertyAnimation(new_effect, b"opacity")
+        fade_in.setDuration(150)
+        fade_in.setStartValue(0.0)
+        fade_in.setEndValue(1.0)
+        fade_in.setEasingCurve(QEasingCurve.InQuad)
+
+        def on_fade_out_finished():
+            self.pages.setCurrentIndex(index)
+            fade_in.start()
+
+        def on_fade_in_finished():
+            # Clean up effects
+            current_widget.setGraphicsEffect(None)
+            new_widget.setGraphicsEffect(None)
+            self._current_page_index = index
+            self._animating = False
+
+        fade_out.finished.connect(on_fade_out_finished)
+        fade_in.finished.connect(on_fade_in_finished)
+
+        # Keep references to prevent garbage collection
+        self._fade_out = fade_out
+        self._fade_in = fade_in
+
+        fade_out.start()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton and event.position().y() < 40:

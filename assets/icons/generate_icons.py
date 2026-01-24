@@ -1,53 +1,170 @@
 """
 Generate app icons for CHAIRMAN
-Creates .ico (Windows) and .icns (macOS) from a base image
-
-To use with a custom icon:
-1. Replace 'icon_base.png' with your 1024x1024 PNG image
-2. Run this script: python generate_icons.py
+Creates .ico (Windows) and .icns (macOS) with a professional barber-themed design
 """
 
+import math
 import struct
 import zlib
 from pathlib import Path
 
 
-def create_simple_icon_png(size: int = 256) -> bytes:
-    """Create a simple colored square PNG as placeholder icon."""
-    # Dark purple/blue gradient-like color (#5865F2 - Discord-like blue)
-    r, g, b = 88, 101, 242
+def create_chairman_icon_png(size: int = 256) -> bytes:
+    """Create a professional CHAIRMAN app icon with scissors design."""
+    # Colors
+    bg_color = (26, 26, 26)  # Dark background #1A1A1A
+    accent_color = (88, 101, 242)  # Brand blue #5865F2
+    highlight_color = (114, 137, 218)  # Lighter blue
+    white = (255, 255, 255)
 
+    # Create pixel data
+    pixels = []
+    center = size // 2
+    radius = size // 2 - size // 10
+
+    for y in range(size):
+        row = []
+        for x in range(size):
+            # Distance from center
+            dx = x - center
+            dy = y - center
+            dist = math.sqrt(dx * dx + dy * dy)
+
+            # Default to transparent/dark
+            r, g, b = bg_color
+
+            # Rounded square background
+            corner_radius = size // 5
+            in_bounds = True
+
+            # Check corners
+            corners = [
+                (corner_radius, corner_radius),
+                (size - corner_radius - 1, corner_radius),
+                (corner_radius, size - corner_radius - 1),
+                (size - corner_radius - 1, size - corner_radius - 1)
+            ]
+
+            for cx, cy in corners:
+                if x < corner_radius and y < corner_radius:
+                    if math.sqrt((x - corner_radius) ** 2 + (y - corner_radius) ** 2) > corner_radius:
+                        in_bounds = False
+                elif x >= size - corner_radius and y < corner_radius:
+                    if math.sqrt((x - (size - corner_radius - 1)) ** 2 + (y - corner_radius) ** 2) > corner_radius:
+                        in_bounds = False
+                elif x < corner_radius and y >= size - corner_radius:
+                    if math.sqrt((x - corner_radius) ** 2 + (y - (size - corner_radius - 1)) ** 2) > corner_radius:
+                        in_bounds = False
+                elif x >= size - corner_radius and y >= size - corner_radius:
+                    if math.sqrt((x - (size - corner_radius - 1)) ** 2 + (y - (size - corner_radius - 1)) ** 2) > corner_radius:
+                        in_bounds = False
+
+            if not in_bounds:
+                row.append(bg_color)
+                continue
+
+            # Gradient background
+            gradient_factor = 1.0 - (y / size) * 0.15
+            r = int(bg_color[0] * gradient_factor)
+            g = int(bg_color[1] * gradient_factor)
+            b = int(bg_color[2] * gradient_factor)
+
+            # Draw a stylized "C" letter
+            c_center_x = center
+            c_center_y = center
+            c_outer_radius = size * 0.35
+            c_inner_radius = size * 0.22
+            c_thickness = c_outer_radius - c_inner_radius
+
+            # Distance from C center
+            c_dx = x - c_center_x
+            c_dy = y - c_center_y
+            c_dist = math.sqrt(c_dx * c_dx + c_dy * c_dy)
+
+            # Angle (for the C opening)
+            angle = math.atan2(c_dy, c_dx)
+            angle_deg = math.degrees(angle)
+
+            # C shape - ring with opening on the right
+            if c_inner_radius <= c_dist <= c_outer_radius:
+                # Opening on the right side (between -45 and 45 degrees)
+                if not (-50 <= angle_deg <= 50):
+                    # Gradient on the C
+                    t = (c_dist - c_inner_radius) / c_thickness
+                    r = int(accent_color[0] + (highlight_color[0] - accent_color[0]) * (1 - t) * 0.3)
+                    g = int(accent_color[1] + (highlight_color[1] - accent_color[1]) * (1 - t) * 0.3)
+                    b = int(accent_color[2] + (highlight_color[2] - accent_color[2]) * (1 - t) * 0.3)
+
+            # Add scissor blades as accent
+            blade_length = size * 0.18
+            blade_width = size * 0.04
+
+            # Top blade (coming from the C opening)
+            blade1_start_x = c_center_x + c_outer_radius * 0.7
+            blade1_start_y = c_center_y - size * 0.08
+            blade1_angle = math.radians(25)
+
+            # Check if point is on blade 1
+            bx = x - blade1_start_x
+            by = y - blade1_start_y
+            # Rotate point to blade coordinate system
+            rot_x = bx * math.cos(-blade1_angle) - by * math.sin(-blade1_angle)
+            rot_y = bx * math.sin(-blade1_angle) + by * math.cos(-blade1_angle)
+
+            if 0 <= rot_x <= blade_length and abs(rot_y) <= blade_width:
+                # Blade gradient
+                t = rot_x / blade_length
+                r = int(white[0] * (0.8 + 0.2 * t))
+                g = int(white[1] * (0.8 + 0.2 * t))
+                b = int(white[2] * (0.8 + 0.2 * t))
+
+            # Bottom blade
+            blade2_start_x = c_center_x + c_outer_radius * 0.7
+            blade2_start_y = c_center_y + size * 0.08
+            blade2_angle = math.radians(-25)
+
+            bx = x - blade2_start_x
+            by = y - blade2_start_y
+            rot_x = bx * math.cos(-blade2_angle) - by * math.sin(-blade2_angle)
+            rot_y = bx * math.sin(-blade2_angle) + by * math.cos(-blade2_angle)
+
+            if 0 <= rot_x <= blade_length and abs(rot_y) <= blade_width:
+                t = rot_x / blade_length
+                r = int(white[0] * (0.8 + 0.2 * t))
+                g = int(white[1] * (0.8 + 0.2 * t))
+                b = int(white[2] * (0.8 + 0.2 * t))
+
+            # Scissor pivot point (small circle)
+            pivot_x = c_center_x + c_outer_radius * 0.65
+            pivot_y = c_center_y
+            pivot_radius = size * 0.035
+
+            if math.sqrt((x - pivot_x) ** 2 + (y - pivot_y) ** 2) <= pivot_radius:
+                r, g, b = accent_color
+
+            row.append((r, g, b))
+        pixels.append(row)
+
+    # Convert to PNG
+    return _pixels_to_png(pixels, size)
+
+
+def _pixels_to_png(pixels: list, size: int) -> bytes:
+    """Convert pixel array to PNG format."""
     # PNG header
     signature = b'\x89PNG\r\n\x1a\n'
 
-    # IHDR chunk (image header)
-    width = size
-    height = size
-    bit_depth = 8
-    color_type = 2  # RGB
-    ihdr_data = struct.pack('>IIBBBBB', width, height, bit_depth, color_type, 0, 0, 0)
+    # IHDR chunk
+    ihdr_data = struct.pack('>IIBBBBB', size, size, 8, 2, 0, 0, 0)
     ihdr_crc = zlib.crc32(b'IHDR' + ihdr_data) & 0xffffffff
     ihdr_chunk = struct.pack('>I', 13) + b'IHDR' + ihdr_data + struct.pack('>I', ihdr_crc)
 
-    # IDAT chunk (image data)
+    # IDAT chunk
     raw_data = b''
-    for y in range(height):
-        raw_data += b'\x00'  # Filter byte (none)
-        for x in range(width):
-            # Create a simple gradient/rounded effect
-            cx, cy = width // 2, height // 2
-            dist = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
-            max_dist = (cx ** 2 + cy ** 2) ** 0.5
-
-            # Rounded rectangle effect
-            margin = size // 8
-            if x < margin or x >= width - margin or y < margin or y >= height - margin:
-                # Transparent-ish edge (darker)
-                raw_data += bytes([r // 2, g // 2, b // 2])
-            else:
-                # Main color with slight gradient
-                factor = 1.0 - (dist / max_dist) * 0.2
-                raw_data += bytes([int(r * factor), int(g * factor), int(b * factor)])
+    for row in pixels:
+        raw_data += b'\x00'  # Filter byte
+        for r, g, b in row:
+            raw_data += bytes([max(0, min(255, r)), max(0, min(255, g)), max(0, min(255, b))])
 
     compressed = zlib.compress(raw_data, 9)
     idat_crc = zlib.crc32(b'IDAT' + compressed) & 0xffffffff
@@ -67,34 +184,25 @@ def create_ico(sizes: list[int] = None) -> bytes:
 
     images = []
     for size in sizes:
-        png_data = create_simple_icon_png(size)
+        png_data = create_chairman_icon_png(size)
         images.append((size, png_data))
 
     # ICO header
-    ico_header = struct.pack('<HHH', 0, 1, len(images))  # Reserved, Type (1=ICO), Count
+    ico_header = struct.pack('<HHH', 0, 1, len(images))
 
     # Calculate offsets
     header_size = 6 + len(images) * 16
     offset = header_size
 
-    # Directory entries and image data
     directory = b''
     image_data = b''
 
     for size, png_data in images:
-        # Directory entry (16 bytes each)
         width = size if size < 256 else 0
         height = size if size < 256 else 0
         directory += struct.pack(
             '<BBBBHHII',
-            width,      # Width (0 = 256)
-            height,     # Height (0 = 256)
-            0,          # Color palette
-            0,          # Reserved
-            1,          # Color planes
-            32,         # Bits per pixel
-            len(png_data),  # Size of image data
-            offset      # Offset to image data
+            width, height, 0, 0, 1, 32, len(png_data), offset
         )
         image_data += png_data
         offset += len(png_data)
@@ -107,26 +215,18 @@ def create_icns(sizes: list[int] = None) -> bytes:
     if sizes is None:
         sizes = [16, 32, 128, 256, 512]
 
-    # ICNS type codes for different sizes
     type_codes = {
-        16: b'icp4',   # 16x16 PNG
-        32: b'icp5',   # 32x32 PNG
-        64: b'icp6',   # 64x64 PNG
-        128: b'ic07',  # 128x128 PNG
-        256: b'ic08',  # 256x256 PNG
-        512: b'ic09',  # 512x512 PNG
-        1024: b'ic10', # 1024x1024 PNG
+        16: b'icp4', 32: b'icp5', 64: b'icp6',
+        128: b'ic07', 256: b'ic08', 512: b'ic09', 1024: b'ic10',
     }
 
     icons_data = b''
     for size in sizes:
         if size in type_codes:
-            png_data = create_simple_icon_png(size)
+            png_data = create_chairman_icon_png(size)
             type_code = type_codes[size]
-            # Each icon: type (4 bytes) + length (4 bytes) + data
             icons_data += type_code + struct.pack('>I', len(png_data) + 8) + png_data
 
-    # ICNS header: 'icns' + total length
     total_length = 8 + len(icons_data)
     return b'icns' + struct.pack('>I', total_length) + icons_data
 
@@ -135,22 +235,23 @@ def main():
     """Generate icon files."""
     icons_dir = Path(__file__).parent
 
+    print("Generating CHAIRMAN app icons...")
+
     # Generate Windows ICO
     ico_path = icons_dir / 'app_icon.ico'
     ico_data = create_ico([16, 32, 48, 256])
     with open(ico_path, 'wb') as f:
         f.write(ico_data)
-    print(f"Created: {ico_path}")
+    print(f"  Created: {ico_path}")
 
     # Generate macOS ICNS
     icns_path = icons_dir / 'app_icon.icns'
     icns_data = create_icns([16, 32, 128, 256, 512])
     with open(icns_path, 'wb') as f:
         f.write(icns_data)
-    print(f"Created: {icns_path}")
+    print(f"  Created: {icns_path}")
 
-    print("\nPlaceholder icons created!")
-    print("To use custom icons, replace these files with your own .ico and .icns files.")
+    print("\nDone! Icons feature a stylized 'C' with scissors motif.")
 
 
 if __name__ == '__main__':

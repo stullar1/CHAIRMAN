@@ -18,6 +18,7 @@ from data.db import init_db, get_tab_order, save_tab_order
 from ui.auth_window import AuthWindow
 from ui.main_window import MainWindow
 from ui.dialogs import UpdateDialog
+from ui.splash_screen import SplashScreen
 
 # Initialize logging first
 logger = setup_logging()
@@ -72,7 +73,11 @@ def run_app() -> None:
         # Load stylesheet
         load_stylesheet(app)
 
-        # Create authentication window
+        # Show splash screen
+        splash = SplashScreen()
+        splash.start()
+
+        # Create authentication window (hidden initially)
         logger.info("Creating authentication window...")
         auth_window = AuthWindow()
 
@@ -145,9 +150,15 @@ def run_app() -> None:
 
         main_window.sidebar.tab_order_changed.connect(on_tab_order_changed)
 
-        # Show authentication window
-        auth_window.show()
-        logger.info("Application started successfully")
+        # Show authentication window after splash finishes
+        def on_splash_finished():
+            auth_window.show()
+            logger.info("Application started successfully")
+
+        splash.finished.connect(on_splash_finished)
+
+        # Auto-finish splash after 2 seconds
+        QTimer.singleShot(2000, splash.finish)
 
         # Check for updates in the background (after a short delay)
         updater = AutoUpdater()

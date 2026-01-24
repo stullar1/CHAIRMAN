@@ -122,12 +122,13 @@ class SideBar(QWidget):
         self._owner_name = "there"
 
         self._nav_items = [
-            ("Schedule", 0),
-            ("Clients", 1),
-            ("Services", 2),
-            ("Products", 3),
-            ("Finance", 4),
-            ("Settings", 5),
+            ("Home", 0),
+            ("Schedule", 1),
+            ("Clients", 2),
+            ("Services", 3),
+            ("Products", 4),
+            ("Finance", 5),
+            ("Settings", 6),
         ]
 
         layout = QVBoxLayout(self)
